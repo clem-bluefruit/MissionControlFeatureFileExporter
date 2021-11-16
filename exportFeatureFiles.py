@@ -2,12 +2,22 @@ import csv
 import os
 import shutil
 
-def sanitiseString(str):
-    str.replace("\\", "")
-    str.replace("/", "")
-    str.replace(",", "")
-    str.replace("-", "")
-    return str.strip()
+stringIndent = "  "
+
+def sanitiseString(featureString: str):
+    featureString = featureString.replace('\\', '')
+    featureString = featureString.replace('/', '')
+    #featureString = featureString.replace(',', '')
+    featureString = featureString.replace('-', '')
+    return featureString.strip()
+
+def IndentScenarioSteps(descriptionString: str):
+    returnString = ""
+    steps = descriptionString.split('\n')
+    for step in steps:
+        returnString += stringIndent + step + "\n"
+    return returnString
+
 
 with open('feature_export.csv') as featureFile:
     allFeatures = csv.reader(featureFile, delimiter=',')
@@ -19,8 +29,9 @@ with open('feature_export.csv') as featureFile:
     for row in allFeatures:
         if "Feature" not in row[0]:
             # Sanitise row data
-            featureName = sanitiseString(row[1]) #.replace("\\", "").replace(",", "").replace("/", "").strip()
-            ruleName = row[4].replace("-", "").replace("\\", "").replace("/", "").strip()
+            featureName = sanitiseString(row[1])
+            ruleName = sanitiseString(row[4])
+
             if (('"' in ruleName) | ("," in ruleName)):
                 stripQuotes = ruleName.split('"')
                 stripCommas = stripQuotes[0].split(",")
@@ -53,6 +64,6 @@ with open('feature_export.csv') as featureFile:
                 extraTag = ""
                 if row[6] is None:
                     extraTag = "@TBD"
-                editFile.write('@feature' + row[0] + " @scenario" + row[5] + extraTag + '\n' + 'Scenario: ' + row[6] + '\n' + row[7] + "\n\n")
+                editFile.write('@feature' + row[0] + " @scenario" + row[5] + extraTag + '\n' + 'Scenario: ' + row[6] + '\n' + IndentScenarioSteps(row[7]) + "\n\n")
                 os.chdir(directoryRoot)
     print("Done")
